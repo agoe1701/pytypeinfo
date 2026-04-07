@@ -1,5 +1,36 @@
 {
+    "editor.rulers": [
+
+        // Parameter ruler
+        {
+            "column": 32,
+            "color" : "#282828"
+        },
+
+        // End of line ruler
+        79,
+    ],
+
     "cSpell.words": [
         "pytypehintcheck"
-    ]
+    ],
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./tests",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+
+    "mypy-type-checker.args": [
+        "--follow-imports=silent",
+        "--ignore-missing-imports",
+        "--show-column-numbers",
+        "--no-pretty",
+        "--no-strict-optional",
+        "--check-untyped-defs",
+        "--disable_error_code=attr-defined"
+    ],
 }
