@@ -14,6 +14,11 @@
     "cSpell.words": [
         "pytypehintcheck"
     ],
+
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportOptionalMemberAccess": "none"
+    },
+
     "python.testing.unittestArgs": [
         "-v",
         "-s",
