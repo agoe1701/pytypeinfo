@@ -4,7 +4,7 @@ from typing import Union, get_type_hints
 
 from test_common import TestCommon
 
-from pytypehintcheck import TypeInfo
+from pytypeinfo import TypeInfo
 
 
 # -----------------------------------------------------------------------------
@@ -31,8 +31,16 @@ class UnionTests(TestCommon):
             sub_types=tp.sub_types is not None
         )
 
-    def test_simple(self):
+    def test_simple_union(self):
         info = TypeInfo(self._hints['simple'])
+
+        self.assert_is_union(info)
+        assert info.check(5)
+        assert info.check('hallo')
+        assert not info.check(b'lala')
+
+    def test_legacy_union(self):
+        info = TypeInfo(self._hints['old'])
 
         self.assert_is_union(info)
         assert info.check(5)

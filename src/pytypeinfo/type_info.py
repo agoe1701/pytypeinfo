@@ -16,13 +16,13 @@ from typing import (
     Union,
     # This is required for old annotations like Dict[str, int], List[int],
     # etc. Newer python versions use dict[str, int] or list[int].
-    _GenericAlias,
+    _GenericAlias,  # type: ignore
     get_args,
     get_origin,
     get_type_hints,
 )
 
-from pytypehintcheck.typing import Annotated, NoneType
+from pytypeinfo.typing import Annotated, NoneType
 
 
 # -----------------------------------------------------------------------------
@@ -64,21 +64,31 @@ else:
 def _resolve_sub_types(hint: _HINT_TYPE) -> Tuple[TypeInfo, ...]:
     sub_types = []
     for arg in get_args(hint):
-        if isinstance(arg, (type, _GenericAlias, GenericAlias)) or arg is Ellipsis:
+        if isinstance(arg, (type, _GenericAlias, GenericAlias)) or arg is Ellipsis:  # noqa: E501
             sub_types.append(TypeInfo(arg))
     return tuple(sub_types)
 
 
 def _raise_type_error(
-    required_name: str,
     required_type: Type[Any],
     obj: Any            # noqa: ANN401
 ) -> NoReturn:
     msg = (
-        f'Invalid type: {required_name} must be {required_type.__name__!r} but'
+        f'Invalid type: object must be {required_type.__name__!r} but'
         f' is {type(obj).__name__!r}'
     )
     raise TypeError(msg)
+
+
+def _raise_member_error(
+    required_member: str,
+    obj: Any            # noqa: ANN401
+) -> NoReturn:
+    msg = (
+        f'Object of type {type(obj).__name__!r} is missing member '
+        f'{required_member!r}'
+    )
+    raise KeyError(msg)
 
 
 def _raise_length_error(
@@ -92,6 +102,19 @@ def _raise_length_error(
         f'but must be {expect_len}'
     )
     raise ValueError(msg)
+
+
+def _raise_class_error(
+    required_class: Optional[Type],
+) -> NoReturn:
+    if required_class is None:
+        msg = 'Object must be a class'
+    else:
+        msg = (
+            f'Object must be class {required_class.__name__!r} '
+            'or subclass thereof'
+        )
+    raise TypeError(msg)
 
 
 # -----------------------------------------------------------------------------
@@ -128,7 +151,10 @@ class TypeInfo(Mapping):
     """
 
     is_callable: bool
-    """Flag: If True object is a callable."""
+    """Flag: If True object is a callable"""
+
+    is_class: bool
+    """Flag: If True object is a class"""
 
     is_class_var: bool
     """
@@ -210,6 +236,7 @@ class TypeInfo(Mapping):
         'is_annotation',
         'is_any',
         'is_callable',
+        'is_class',
         'is_class_var',
         'is_ellipsis',
         'is_immutable',
@@ -327,6 +354,7 @@ class TypeInfo(Mapping):
         self.is_none = hint is NoneType or hint is None
         self.is_ellipsis = hint is Ellipsis
         self.is_annotation = False
+        self.is_class = False
         self.is_class_var = False
         self.is_type_var = False
         self.is_strict = False
@@ -359,6 +387,7 @@ class TypeInfo(Mapping):
         self.is_type_var = isinstance(hint, TypeVar)
         self.is_annotation = _is_annotation(hint)
         self.is_union = self.origin is Union
+        self.is_class = hint is type or self.origin is type
 
         if self.is_annotation or self.is_class_var:
             self.metadata = getattr(hint, _META_ATTR, ())
@@ -410,6 +439,10 @@ class TypeInfo(Mapping):
             self.sub_types = ()
             return
 
+        if self.is_class and self.sub_types == ():
+            # 'Type' hint without parameter becomes Type[Any]
+            self.is_any = True
+
         self.is_tuple = self.type is tuple
 
     def _union_check(
@@ -436,7 +469,7 @@ class TypeInfo(Mapping):
             return True
 
         if num_sub_types == 2 and self.sub_types[1].is_ellipsis:  # noqa: PLR2004
-            # for example tuple[int, ...]
+
             return self._sequence_check(obj, name, do_raise)
 
         if len(self.sub_types) != len(obj):
@@ -536,7 +569,6 @@ class TypeInfo(Mapping):
         name: str,
         do_raise: bool = False
     ) -> bool:
-        # TODO: TypeVar test
         if self.is_any:
             return True
 
@@ -571,9 +603,31 @@ class TypeInfo(Mapping):
 
         return False
 
-    def _check_class(self, cls: Type[Any], do_raise: bool = False) -> bool:
-        # TODO: implement further
-        return issubclass(cls, self.type) if self.type is not None else False
+    def _check_class(
+        self,
+        cls: Type[Any],
+        name: str = '',
+        do_raise: bool = False
+    ) -> bool:
+        if not isinstance(cls, type):
+            if do_raise:
+                _raise_class_error(
+                    None if self.is_any else self.sub_types[0].type
+                )
+            return False
+
+        if self.is_any:
+            return True
+
+        if self.sub_types != ():
+            # TODO: Add strict type checking
+            if not issubclass(cls, self.sub_types[0].type):
+                if do_raise:
+                    _raise_class_error(self.sub_types[0].type)
+                return False
+            return True
+
+        return False
 
     def check(
         self,
@@ -581,7 +635,7 @@ class TypeInfo(Mapping):
         name: str = '',
         do_raise: bool = False
     ) -> bool:
-        if isinstance(obj, type):
+        if self.is_class:
             return self._check_class(obj,  do_raise=do_raise)
         return self._check_instance(obj, name, do_raise=do_raise)
 
@@ -606,6 +660,7 @@ class TypeInfoCollection(Mapping):
         return len(self._infos)
 
     def __init__(self, cls: Type[Any]) -> None:
+        # TODO: Add recursive checking
         if not isinstance(cls, type):
             msg = (
                 f'cls argument of {self.__class__.__name__} must by a '
@@ -618,15 +673,46 @@ class TypeInfoCollection(Mapping):
         hints = get_type_hints(cls, include_extras=True)
         self._infos = {n: TypeInfo(h) for n, h in hints.items()}
 
-    def check(self, obj: Any) -> bool:  # noqa: ANN401
-        if not isinstance(obj, self._type):
+    def check(
+        self,
+        obj: Any,    # noqa: ANN401
+        accept_other: bool = False,
+        do_raise: bool = False,
+    ) -> bool:
+        """
+        Check an object for conformity to a TypeInfoCollection. Object must
+        have members with same name and type.
+
+        :param obj:             The object to check
+        :param accept_other:    Object can be of different type but must have
+                                the same typed members
+        :param do_raise:        raise an exception when check fails
+
+        :return:                True if check is successful.
+        """
+        if not accept_other and not isinstance(obj, self._type):
+            if do_raise:
+                _raise_type_error(self._type, obj)
             return False
 
+        obj_name = type(obj).__name__
         for name, ti in self._infos.items():
-            if not hasattr(obj, name) or not ti.check(getattr(obj, name)):
+            if not hasattr(obj, name):
+                if do_raise:
+                    _raise_member_error(name, obj)
+                return False
+
+            if not ti.check(
+                getattr(obj, name),
+                name=f'{obj_name}.{name}',
+                do_raise=do_raise
+            ):
                 return False
 
         return True
 
-
-TYPE_INFO_HINTS = TypeInfoCollection(TypeInfo)
+    def diagnose(
+        self
+    ) -> str:
+        # TODO: Implement detailed diagnostic for type errors
+        ...

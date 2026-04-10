@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Optional
 from unittest import TestCase
 
-from pytypehintcheck import TypeInfo
+from pytypeinfo import TypeInfo
 
 
 # -----------------------------------------------------------------------------
@@ -20,6 +20,7 @@ class TestCommon(TestCase):
         is_annotation: bool = False,
         is_any: bool = False,
         is_callable: bool = False,
+        is_class: bool = False,
         is_class_var: bool = False,
         is_ellipsis: bool = False,
         is_immutable: bool = False,
@@ -53,6 +54,7 @@ class TestCommon(TestCase):
         assert tp.is_annotation == is_annotation
         assert tp.is_any == is_any
         assert tp.is_callable == is_callable
+        assert tp.is_class == is_class
         assert tp.is_class_var == is_class_var
         assert tp.is_ellipsis == is_ellipsis
         assert tp.is_immutable == is_immutable

@@ -1,14 +1,12 @@
 from __future__ import annotations
 
-from pytypehintcheck.type_info import (
-    TYPE_INFO_HINTS,
+from pytypeinfo.type_info import (
     TypeInfo,
     TypeInfoCollection,
 )
 
 
 __all__ = [
-    'TYPE_INFO_HINTS',
     'TypeInfo',
     'TypeInfoCollection'
 ]

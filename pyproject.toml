@@ -3,11 +3,11 @@ requires = ["setuptools>=75.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pytypehintcheck"
+name = "pytypeinfo"
 version = "0.1.0"
 description = "A tool for checking Python type hints"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "GPL2"}
 authors = [
     {name = "André Göpel", email = "andre.goepel@sik-berlin.de"}
@@ -17,7 +17,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -26,11 +25,6 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Quality Assurance",
     "Topic :: Software Development :: Testing",
-]
-
-dependencies = [
-    # Add your runtime dependencies here
-    # Example: "typing-extensions>=4.0.0",
 ]
 
 [project.optional-dependencies]
@@ -44,10 +38,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agoe1701/pytypehintcheck"
-Documentation = "https://github.com/agoe1701/pytypehintcheck#readme"
-Repository = "https://github.com/agoe1701/pytypehintcheck"
-Issues = "https://github.com/agoe1701/pytypehintcheck/issues"
+Homepage = "https://github.com/agoe1701/pytypeinfo"
+Documentation = "https://github.com/agoe1701/pytypeinfo#readme"
+Repository = "https://github.com/agoe1701/pytypeinfo"
+Issues = "https://github.com/agoe1701/pytypeinfo/issues"
 
 
 [tool.black]
@@ -59,7 +53,7 @@ profile = "black"
 line_length = 79
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.13"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -69,10 +63,10 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "--cov=pytypehintcheck --cov-report=term-missing"
+addopts = "--cov=pytypeinfo --cov-report=term-missing"
 
 [tool.ruff]
 line-length = 79
-target-version = "py38"
+target-version = "py313"
 select = ["E", "F", "I", "N", "W", "B", "ANN"]
 ignore = []

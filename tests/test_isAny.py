@@ -4,7 +4,7 @@ from typing import Any, get_type_hints
 
 from test_common import TestCommon
 
-from pytypehintcheck import TypeInfo
+from pytypeinfo import TypeInfo
 
 
 # -----------------------------------------------------------------------------

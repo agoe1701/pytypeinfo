@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, get_type_hints
 from unittest import TestCase
 
-from pytypehintcheck import TypeInfo
+from pytypeinfo import TypeInfo
 
 
 # -----------------------------------------------------------------------------

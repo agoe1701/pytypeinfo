@@ -4,7 +4,7 @@ from typing import Annotated, get_type_hints
 
 from test_common import TestCommon
 
-from pytypehintcheck import TypeInfo
+from pytypeinfo import TypeInfo
 
 
 # -----------------------------------------------------------------------------
@@ -38,7 +38,7 @@ class AnnotatedTests(TestCommon):
             metadata=tp.metadata != ()
         )
 
-    def test_simple(self):
+    def test_annotated_simple(self):
         info = TypeInfo(self._hints['simple'])
 
         self.assert_is_annotated(info)
@@ -48,7 +48,7 @@ class AnnotatedTests(TestCommon):
         assert info.check(5)
         assert not info.check('lala')
 
-    def test_custom(self):
+    def test_annotated_custom(self):
         info = TypeInfo(self._hints['custom'])
 
         self.assert_is_annotated(info)
