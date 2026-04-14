@@ -27,6 +27,8 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
+dependencies = ["typing_extensions"]
+
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",

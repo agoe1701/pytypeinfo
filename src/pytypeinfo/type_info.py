@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable, Collection, Mapping, Sequence
-from types import GenericAlias, UnionType
+from types import GenericAlias
 from typing import (
+    _SpecialForm,
+    Annotated,
     Any,
     ClassVar,
     Iterator,
@@ -18,11 +20,10 @@ from typing import (
     # etc. Newer python versions use dict[str, int] or list[int].
     _GenericAlias,  # type: ignore
     get_args,
-    get_origin,
-    get_type_hints,
+    get_origin
 )
 
-from pytypeinfo.typing import Annotated, NoneType
+from pytypeinfo.typing import NoneType, UnionType, get_type_hints
 
 
 # -----------------------------------------------------------------------------
@@ -46,6 +47,7 @@ _CONSTRAINTS_ATTR = '__constraints__'
 
 _HINT_TYPE = Any
 
+_ARG_TYPES = (type, _GenericAlias, GenericAlias, _SpecialForm)
 
 # -----------------------------------------------------------------------------
 # Functions
@@ -64,7 +66,7 @@ else:
 def _resolve_sub_types(hint: _HINT_TYPE) -> Tuple[TypeInfo, ...]:
     sub_types = []
     for arg in get_args(hint):
-        if isinstance(arg, (type, _GenericAlias, GenericAlias)) or arg is Ellipsis:  # noqa: E501
+        if isinstance(arg, _ARG_TYPES) or arg is Ellipsis:
             sub_types.append(TypeInfo(arg))
     return tuple(sub_types)
 

@@ -12,10 +12,11 @@ else:
 if sys.version_info < (3, 10):
     from typing_extensions import TypeAlias, TypeGuard
     NoneType = type(None)
+    UnionType = type(None)
 else:
     # Import everything that has been introduced in python 3.10
     from types import NoneType      # noqa
-    from typing import TypeAlias, TypeGuard
+    from typing import TypeAlias, TypeGuard, UnionType
 
 if sys.version_info < (3, 11):
     from typing_extensions import dataclass_transform
@@ -29,6 +30,7 @@ __all__ = [
     'NoneType',
     'TypeAlias',
     'TypeGuard',
+    'UnionType',
     'dataclass_transform',
     'get_type_hints',
 ]

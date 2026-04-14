@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import ClassVar, get_type_hints
+from typing import ClassVar
+
+import unittest
+import sys
 
 from pytypeinfo import TypeInfo
+from pytypeinfo.typing import get_type_hints
 from tests.test_common import TestCommon
 
 
@@ -10,10 +14,15 @@ from tests.test_common import TestCommon
 # Classes
 # -----------------------------------------------------------------------------
 
-class _ClassVarHints:
-    simple: ClassVar
-    cl_float: ClassVar[float]
-    cl_complex: ClassVar[tuple[int, ...]]
+if sys.version_info < (3, 10):
+    class _ClassVarHints:
+        cl_float: ClassVar[float]
+        cl_complex: ClassVar[tuple[int, ...]]
+else:
+    class _ClassVarHints:
+        simple: ClassVar
+        cl_float: ClassVar[float]
+        cl_complex: ClassVar[tuple[int, ...]]
 
 
 class ClassVarTests(TestCommon):
@@ -30,6 +39,10 @@ class ClassVarTests(TestCommon):
             type=tp.type is not None
         )
 
+    @unittest.skipIf(
+        sys.version_info < (3, 10),
+        'Plain ClassVar is not supported'
+    )
     def test_class_var_simple(self):
         info = TypeInfo(self._hints['simple'])
 

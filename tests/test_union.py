@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from typing import Union, get_type_hints
 
+import sys
+import unittest
+
 from pytypeinfo import TypeInfo
 from tests.test_common import TestCommon
 
@@ -10,9 +13,12 @@ from tests.test_common import TestCommon
 # Classes
 # -----------------------------------------------------------------------------
 
-class _UnionHints:
-    simple: int | str
-    old: Union[int, str]
+if sys.version_info < (3, 10):
+    class _UnionHints:
+        old: Union[int, str]
+else:
+    class _UnionHints:
+        simple: int | str
 
 
 class UnionTests(TestCommon):
@@ -30,6 +36,10 @@ class UnionTests(TestCommon):
             sub_types=tp.sub_types is not None
         )
 
+    @unittest.skipIf(
+        sys.version_info < (3,10),
+        'Not supported in 3.9 and lower'
+    )
     def test_simple_union(self):
         info = TypeInfo(self._hints['simple'])
 
